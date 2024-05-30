@@ -59,28 +59,39 @@ Once the application is running, you will see a calculator interface with the fo
 
 ## Project Structure
 ```plaintext
-gui-calculator/
-│
-├── src/
-│   ├── main/
-│   │   ├── java/
-│   │   │   └── com/
-│   │   │       └── zynotic/
-│   │   │           └── studios/
-│   │   │               └── noor/
-│   │   │                   └── calculator/
-│   │   │                       └── App.java
-│   │   ├── resources/
-│   │       └── assets/
-│   │           └── fonts/
-│   │           └── images/
-│   │
-│   └── test/
-│       └── java/
-│
-├── pom.xml
-├── README.md
-└── LICENSE
+|   .classpath
+|   .gitignore
+|   .project
+|   LICENSE
+|   pom.xml
+|   README.md
+|   structure.txt
+|   
++---.settings
+|       org.eclipse.core.resources.prefs
+|       org.eclipse.jdt.core.prefs
+|       org.eclipse.m2e.core.prefs
+|       
+\---src
+    \---main
+        +---java
+        |   |   module-info.java
+        |   |   
+        |   \---com
+        |       \---zynotic
+        |           \---studios
+        |               \---noor
+        |                   \---calculator
+        |                           App.java
+        |                           
+        \---resources
+            \---assets
+                +---fonts
+                |       seven_segment.ttf
+                |       
+                \---images
+                    \---icons
+                            icon.png
 ```
 
 ## Contributing

@@ -21,8 +21,8 @@ GUI Calculator is a graphical user interface (GUI) calculator application built 
 
 ### Clone the Repository
 ```bash
-git clone https://github.com/mrasadatik/noor-e-sabab.academic.cse110.gui-calculator.git
-cd noor-e-sabab.academic.cse110.gui-calculator
+git clone https://github.com/mrasadatik/basic-java-gui-calculator.git
+cd basic-java-gui-calculator
 ```
 
 ### Build the Project

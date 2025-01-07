@@ -1,4 +1,4 @@
-package com.zynotic.studios.noor.calculator;
+package com.zynotic.studios.guiCalculator;
 
 import javafx.util.Duration;
 
@@ -8,8 +8,6 @@ import atlantafx.base.theme.PrimerLight;
 import javafx.animation.PauseTransition;
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -23,13 +21,14 @@ import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
 
 public class App extends Application {
-    
+
     Font sevenSegmentFont;
 
     private TextField displayField;
     private double firstNumber = 0;
     private String operator = "";
     private boolean startNewNumber = true;
+    private boolean errorOccurred = false;
 
     public static void main(String[] args) {
         launch(args);
@@ -38,9 +37,9 @@ public class App extends Application {
     @SuppressWarnings("exports")
     @Override
     public void start(Stage primaryStage) {
-    	Application.setUserAgentStylesheet(new PrimerLight().getUserAgentStylesheet());
-    	
-        sevenSegmentFont = Font.loadFont(getClass().getResource("/assets/fonts/seven_segment.ttf").toExternalForm(), 30);
+        Application.setUserAgentStylesheet(new PrimerLight().getUserAgentStylesheet());
+
+        sevenSegmentFont = Font.loadFont(Objects.requireNonNull(getClass().getResource("/assets/fonts/seven_segment.ttf")).toExternalForm(), 30);
 
         if (sevenSegmentFont == null) {
             System.out.println("Font could not be loaded.");
@@ -103,12 +102,12 @@ public class App extends Application {
 
         Button button0 = createButton("0", "#426573", "white");
         Button buttonDecimal = createButton(".", "#426573", "white");
-        Button buttonDelete = createButton("Del", "#426573", "#fff");
+        Button buttonDelete = createButton("Del", "#426573", "white");
         Button buttonAdd = createButton("+", "#b3c2c2", "black");
 
         Button buttonOff = createButton("OFF", "#ce0d08", "white");
         Button buttonClear = createButton("C", "#ed6971", "white");
-        Button buttonEquals = createButton("=", "#7eb3e5", "#fff");
+        Button buttonEquals = createButton("=", "#7eb3e5", "white");
         Button buttonSqrt = createButton("√", "#b3c2c2", "black");
 
         grid.add(button7, 0, 0);
@@ -150,34 +149,19 @@ public class App extends Application {
     }
 
     private void buttonClicked(String label, Button button) {
+        if (errorOccurred) {
+            clearDisplay();
+        }
+
         switch (label) {
-            case "+":
-            case "-":
-            case "×":
-            case "÷":
-                handleOperator(label);
-                break;
-            case "=":
-                handleEquals();
-                break;
-            case ".":
-                handleDecimalPoint();
-                break;
-            case "√":
-                handleSquareRoot();
-                break;
-            case "Del":
-                handleDelete();
-                break;
-            case "C":
-                clearDisplay();
-                break;
-            case "OFF":
-                displayOff(button);
-                break;
-            default: // numbers
-                handleNumber(label);
-                break;
+            case "+", "-", "×", "÷" -> handleOperator(label);
+            case "=" -> handleEquals();
+            case "." -> handleDecimalPoint();
+            case "√" -> handleSquareRoot();
+            case "Del" -> handleDelete();
+            case "C" -> clearDisplay();
+            case "OFF" -> displayOff(button);
+            default -> handleNumber(label);
         }
     }
 
@@ -187,11 +171,14 @@ public class App extends Application {
         }
         firstNumber = Double.parseDouble(displayField.getText());
         operator = label;
-        displayField.setText(firstNumber + " " + (operator == "÷" ? "/" : operator));
+        displayField.setText(firstNumber + " " + (Objects.equals(operator, "÷") ? "/" : operator));
         startNewNumber = true;
     }
 
     private void handleEquals() {
+        if (operator.isEmpty()) {
+            return; // No operation to perform
+        }
         double secondNumber = Double.parseDouble(displayField.getText().replace(firstNumber + " " + operator + " ", ""));
         double result = 0;
         switch (operator) {
@@ -209,6 +196,7 @@ public class App extends Application {
                     result = firstNumber / secondNumber;
                 } else {
                     displayField.setText("Error");
+                    errorOccurred = true;
                     return;
                 }
                 break;
@@ -219,13 +207,26 @@ public class App extends Application {
     }
 
     private void handleSquareRoot() {
-        double number = Double.parseDouble(displayField.getText());
-        if (number >= 0) {
-            double result = Math.sqrt(number);
-            displayField.setText(String.valueOf(result));
-            startNewNumber = true;
-        } else {
+        String text = displayField.getText();
+        if (text.isEmpty()) {
             displayField.setText("Error");
+            errorOccurred = true;
+            return;
+        }
+
+        try {
+            double number = Double.parseDouble(text);
+            if (number >= 0) {
+                double result = Math.sqrt(number);
+                displayField.setText(String.valueOf(result));
+                startNewNumber = true;
+            } else {
+                displayField.setText("Error");
+                errorOccurred = true;
+            }
+        } catch (NumberFormatException e) {
+            displayField.setText("Error");
+            errorOccurred = true;
         }
     }
 
@@ -246,7 +247,7 @@ public class App extends Application {
 
     private void handleDelete() {
         String text = displayField.getText();
-        if (text.length() > 0) {
+        if (!text.isEmpty()) {
             displayField.setText(text.substring(0, text.length() - 1));
         }
     }
@@ -255,21 +256,18 @@ public class App extends Application {
         displayField.setText("");
         operator = "";
         startNewNumber = true;
+        errorOccurred = false;
     }
 
     private void displayOff(Button button) {
         displayField.setText("Are you Sure?");
         button.setOnAction(
-            new EventHandler <ActionEvent> () {
+                actionEvent -> {
+                    displayField.setText("Ok Fine! BYE");
 
-                @Override
-                public void handle(ActionEvent actionEvent) {
-                	displayField.setText("Ok Fine! BYE");
-                	
-                	PauseTransition delay = new PauseTransition(Duration.seconds(1));
+                    PauseTransition delay = new PauseTransition(Duration.seconds(1));
                     delay.setOnFinished(event -> Platform.exit());
                     delay.play();
-                }
-            });
+                });
     }
 }
